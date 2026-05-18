@@ -158,7 +158,7 @@
                         }
                     },
                     "type": "basic",
-                    "to_if_alone": [
+                    "to": [
                         {
                             "shell_command": "~/.config/karabiner/scripts/dictation-whisper.sh route dji-save save 2>/dev/null"
                         },
