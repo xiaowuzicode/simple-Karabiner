@@ -128,3 +128,81 @@ cat /tmp/dji-dictation/debug.log
 ## 许可
 
 MIT
+
+---
+
+## Whisper 流式版（本地实时识别）
+
+> **新套件，与原版并行存在，互不影响。**  
+> 替换了 闪电说 + right_command，改用 `whisper.cpp stream` 在本地实时转写中文，边说边出字，停止后自动粘贴到当前光标位置。
+
+### 工作流程（与原版相同的三段式）
+
+```
+第 1 次按  →  启动 Whisper 流式录音（通知: 🎤 开始录音...）
+第 2 次按  →  停止识别 + 通知展示识别结果 + 进入就绪状态
+第 3 次按  →  自动粘贴识别文字到当前 App + 发送 Enter
+5 秒不按   →  静默重置
+```
+
+### 前置条件
+
+```bash
+# 1. 安装 whisper-cpp
+brew install whisper-cpp
+
+# 2. 下载模型（M4 Pro 推荐 large-v3，约 3GB）
+whisper-cpp-download-ggml-model large-v3
+# 或更快的中号模型（约 1.5GB）
+whisper-cpp-download-ggml-model medium
+
+# 3. 授权麦克风：系统设置 → 隐私与安全 → 麦克风 → 授权 iTerm2 / Terminal.app
+```
+
+### 安装
+
+```bash
+# 复制两个新脚本
+cp scripts/whisper-stream.sh ~/.config/karabiner/scripts/
+cp scripts/dictation-whisper.sh ~/.config/karabiner/scripts/
+chmod +x ~/.config/karabiner/scripts/whisper-stream.sh
+chmod +x ~/.config/karabiner/scripts/dictation-whisper.sh
+
+# 检查依赖
+~/.config/karabiner/scripts/whisper-stream.sh install-check
+```
+
+将 `karabiner/dji-mic-mini-whisper.json` 中的规则导入 Karabiner（替换或与原版 profile 并存均可）。
+
+### 文件结构（新增部分）
+
+```
+scripts/
+├── whisper-stream.sh       ← Whisper 流式引擎（start / stop / get-text）
+└── dictation-whisper.sh    ← 三段式状态机（调用 whisper-stream）
+karabiner/
+└── dji-mic-mini-whisper.json  ← Karabiner 规则（去掉了 right_command 触发）
+```
+
+### 与原版的差异
+
+| | 原版 (dictation-enter.sh) | Whisper 版 (dictation-whisper.sh) |
+|---|---|---|
+| 语音引擎 | 闪电说 / macOS 自带听写 | whisper.cpp (本地) |
+| 触发方式 | right_command 切换 | 脚本直接启动 stream |
+| confirm 动作 | 只发 Enter（文字由引擎写入） | 先粘贴识别文字，再发 Enter |
+| 网络依赖 | 视引擎而定 | 完全离线 |
+| 中文质量 | 视引擎而定 | large-v3 接近人工水平 |
+
+### 排查
+
+```bash
+# 查看实时日志
+tail -f /tmp/dji-dictation/debug.log
+
+# 手动测试识别
+~/.config/karabiner/scripts/whisper-stream.sh start
+# 说几句话...
+~/.config/karabiner/scripts/whisper-stream.sh stop
+~/.config/karabiner/scripts/whisper-stream.sh get-text
+```
