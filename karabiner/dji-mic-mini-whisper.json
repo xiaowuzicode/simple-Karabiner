@@ -157,7 +157,6 @@
                             ]
                         }
                     },
-                    "to": [],
                     "type": "basic",
                     "to_if_alone": [
                         {
