@@ -34,28 +34,30 @@ log() { /usr/bin/printf '%s whisper-stream: %s\n' "$(timestamp)" "$*" >> "$LOG";
 notify() { /usr/bin/osascript -e "display notification \"$*\" with title \"🎤 Whisper\"" 2>/dev/null & }
 
 find_stream_bin() {
-    # brew install whisper-cpp 会在以下路径安装 stream 二进制
+    # whisper-cpp 1.7+ 改名为 whisper-stream
     for p in \
+        /opt/homebrew/bin/whisper-stream \
+        /usr/local/bin/whisper-stream \
         /opt/homebrew/bin/stream \
         /usr/local/bin/stream \
-        "${HOME}/.local/bin/stream" \
-        /opt/homebrew/opt/whisper-cpp/bin/stream; do
+        "${HOME}/.local/bin/whisper-stream"; do
         [ -x "$p" ] && echo "$p" && return 0
     done
     return 1
 }
 
 find_model() {
-    local cache_dir="${HOME}/.cache/whisper"
-    # 按质量从高到低尝试
-    for name in \
-        ggml-large-v3.bin \
-        ggml-large-v2.bin \
-        ggml-medium.bin \
-        ggml-small.bin \
-        ggml-base.bin; do
-        local path="${cache_dir}/${name}"
-        [ -f "$path" ] && echo "$path" && return 0
+    # 按质量从高到低，检查常见位置
+    for dir in "${HOME}/.cache/whisper" /tmp /opt/homebrew/share/whisper-cpp; do
+        for name in \
+            ggml-large-v3.bin \
+            ggml-large-v2.bin \
+            ggml-medium.bin \
+            ggml-small.bin \
+            ggml-base.bin; do
+            local path="${dir}/${name}"
+            [ -f "$path" ] && echo "$path" && return 0
+        done
     done
     return 1
 }
