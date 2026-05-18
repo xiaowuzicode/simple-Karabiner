@@ -77,8 +77,7 @@ kill_stream() {
 }
 
 get_final_text() {
-    # whisper stream 每步输出当前滑动窗口的完整文字（以空格开头）
-    # 最后一行 = 最新、最完整的识别结果
+    # -f 输出的是纯文本（每步追加一行），取最后一行
     /usr/bin/grep -v '^\s*$' "$RAW_FILE" 2>/dev/null \
         | /usr/bin/tail -1 \
         | /usr/bin/sed 's/^[[:space:]]*//' \
@@ -108,17 +107,15 @@ start)
     log "start bin=$STREAM_BIN model=$(basename "$MODEL") lang=$WHISPER_LANG"
     notify "🎤 开始录音..."
 
-    # 启动 stream，原始输出写入 RAW_FILE
-    # -nt: 无时间戳，输出纯文字
+    # 用 -f 把识别文字写入文件（干净文本，无 ANSI 转义码）
     "$STREAM_BIN" \
         -m "$MODEL" \
         -l "$WHISPER_LANG" \
         --step "$WHISPER_STEP" \
         --length "$WHISPER_LENGTH" \
         --keep 500 \
-        -t "$WHISPER_THREADS" \
-        -nt \
-        2>/dev/null >> "$RAW_FILE" &
+        -f "$RAW_FILE" \
+        2>/dev/null &
 
     echo $! > "$PID_FILE"
     log "stream started pid=$!"
