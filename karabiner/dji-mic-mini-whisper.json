@@ -1,0 +1,177 @@
+{
+    "title": "DJI Mic Mini 三段式语音听写 (Whisper 流式版)",
+    "rules": [
+        {
+            "description": "DJI Mic Mini: 三段式语音听写 Whisper 版 (开始录音 → 停止识别 → 粘贴+发送)",
+            "manipulators": [
+                {
+                    "conditions": [
+                        {
+                            "identifiers": [
+                                {
+                                    "product_id": 16401,
+                                    "vendor_id": 11427
+                                }
+                            ],
+                            "type": "device_if"
+                        },
+                        {
+                            "name": "dji_ready_to_send",
+                            "type": "variable_if",
+                            "value": 1
+                        }
+                    ],
+                    "from": {
+                        "consumer_key_code": "volume_increment",
+                        "modifiers": {
+                            "optional": [
+                                "any"
+                            ]
+                        }
+                    },
+                    "to": [
+                        {
+                            "shell_command": "~/.config/karabiner/scripts/dictation-whisper.sh route dji-confirm confirm 2>/dev/null"
+                        }
+                    ],
+                    "type": "basic"
+                },
+                {
+                    "conditions": [
+                        {
+                            "identifiers": [
+                                {
+                                    "product_id": 16401,
+                                    "vendor_id": 11427
+                                }
+                            ],
+                            "type": "device_if"
+                        },
+                        {
+                            "name": "dji_watching",
+                            "type": "variable_if",
+                            "value": 1
+                        }
+                    ],
+                    "from": {
+                        "consumer_key_code": "volume_increment",
+                        "modifiers": {
+                            "optional": [
+                                "any"
+                            ]
+                        }
+                    },
+                    "to": [
+                        {
+                            "shell_command": "~/.config/karabiner/scripts/dictation-whisper.sh route dji-preconfirm preconfirm 2>/dev/null"
+                        }
+                    ],
+                    "type": "basic"
+                },
+                {
+                    "conditions": [
+                        {
+                            "identifiers": [
+                                {
+                                    "product_id": 16401,
+                                    "vendor_id": 11427
+                                }
+                            ],
+                            "type": "device_if"
+                        },
+                        {
+                            "name": "dji_dictation_active",
+                            "type": "variable_if",
+                            "value": 1
+                        },
+                        {
+                            "name": "dji_watching",
+                            "type": "variable_unless",
+                            "value": 1
+                        },
+                        {
+                            "name": "dji_ready_to_send",
+                            "type": "variable_unless",
+                            "value": 1
+                        }
+                    ],
+                    "from": {
+                        "consumer_key_code": "volume_increment",
+                        "modifiers": {
+                            "optional": [
+                                "any"
+                            ]
+                        }
+                    },
+                    "to": [
+                        {
+                            "set_variable": {
+                                "name": "dji_dictation_active",
+                                "value": 0
+                            }
+                        },
+                        {
+                            "set_variable": {
+                                "name": "dji_watching",
+                                "value": 1
+                            }
+                        },
+                        {
+                            "shell_command": "/usr/bin/nohup ~/.config/karabiner/scripts/dictation-whisper.sh route dji-watch watch 2>/dev/null &"
+                        }
+                    ],
+                    "type": "basic"
+                },
+                {
+                    "conditions": [
+                        {
+                            "identifiers": [
+                                {
+                                    "product_id": 16401,
+                                    "vendor_id": 11427
+                                }
+                            ],
+                            "type": "device_if"
+                        },
+                        {
+                            "name": "dji_dictation_active",
+                            "type": "variable_unless",
+                            "value": 1
+                        },
+                        {
+                            "name": "dji_ready_to_send",
+                            "type": "variable_unless",
+                            "value": 1
+                        },
+                        {
+                            "name": "dji_watching",
+                            "type": "variable_unless",
+                            "value": 1
+                        }
+                    ],
+                    "from": {
+                        "consumer_key_code": "volume_increment",
+                        "modifiers": {
+                            "optional": [
+                                "any"
+                            ]
+                        }
+                    },
+                    "to": [],
+                    "type": "basic",
+                    "to_if_alone": [
+                        {
+                            "shell_command": "~/.config/karabiner/scripts/dictation-whisper.sh route dji-save save 2>/dev/null"
+                        },
+                        {
+                            "set_variable": {
+                                "name": "dji_dictation_active",
+                                "value": 1
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
